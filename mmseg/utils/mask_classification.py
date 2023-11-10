@@ -162,11 +162,10 @@ class MatchMasks:
         """
         gt_labels = gt_instances.labels
         gt_masks = gt_instances.masks
-        # when "gt_labels" is empty, classify all queries to background
+        # TODO:when "gt_labels" is empty, classify all queries to background
         if len(gt_labels) == 0:
-            labels = gt_labels.new_full((self.num_queries, ),
-                                        self.num_classes,
-                                        dtype=torch.long)
+            # TODO: print("FATAL: NO GT Labels in this picture")
+            labels = gt_labels.new_zeros((self.num_queries, ))
             mask_targets = gt_labels
             mask_weights = gt_labels.new_zeros((self.num_queries, ))
             return labels, mask_targets, mask_weights
@@ -176,6 +175,8 @@ class MatchMasks:
 
         point_coords = torch.rand((1, self.num_points, 2),
                                   device=cls_score.device)
+        
+        # TODO:what is point sample
         # shape (num_queries, num_points)
         mask_points_pred = point_sample(
             mask_pred.unsqueeze(1), point_coords.repeat(num_queries, 1,
@@ -190,12 +191,15 @@ class MatchMasks:
         sampled_pred_instances = InstanceData(
             scores=cls_score, masks=mask_points_pred)
         # assign and sample
+        # 只一对一label和mask进行分配
         matched_quiery_inds, matched_label_inds = self.assigner.assign(
             pred_instances=sampled_pred_instances,
             gt_instances=sampled_gt_instances)
-        labels = gt_labels.new_full((self.num_queries, ),
-                                    self.num_classes,
-                                    dtype=torch.long)
+        #TODO:bakground
+        labels = gt_labels.new_zeros((self.num_queries, ))
+        # labels = gt_labels[torch.randint(0,gt_labels.shape[0],(self.num_queries,),device=gt_labels.device)]
+        #TODO: only right masks have cls_labels
+
         labels[matched_quiery_inds] = gt_labels[matched_label_inds]
 
         mask_weights = gt_labels.new_zeros((self.num_queries, ))

@@ -217,7 +217,8 @@ class CLIPTextEncoder(BaseModule):
                 class_embeds = self.template_encode(class_names)
 
         if self.cat_bg:
-            class_embeds = torch.cat([class_embeds, self.bg_embed])
+            # TODO:
+            class_embeds = torch.cat([self.bg_embed,class_embeds])
             class_embeds = F.normalize(class_embeds, p=2, dim=-1)
         return self.logit_scale.exp() * class_embeds
 

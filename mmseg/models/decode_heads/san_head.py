@@ -138,7 +138,7 @@ class SideAdapterNetwork(nn.Module):
             kernel_size=patch_size,
             stride=patch_size,
             padding=0,
-            input_size=(640, 640),
+            input_size=(512, 512),
             bias=patch_bias,
             norm_cfg=None,
             init_cfg=None,
@@ -220,10 +220,14 @@ class SideAdapterNetwork(nn.Module):
                     mode='bicubic',
                     align_corners=False,
                 ).flatten(2).permute(0, 2, 1))
+        
+        # TODO:加入query_pos_embed 位置嵌入,不知道什么意思
         pos_embed = torch.cat([
             self.query_pos_embed.expand(pos_embed.shape[0], -1, -1), pos_embed
         ],
                               dim=1)
+        
+        # TODO:加入query_embed
         x = torch.cat([self.query_embed.expand(x.shape[0], -1, -1), x], dim=1)
         x = x + pos_embed
         L = hwshape[0] * hwshape[1]
@@ -247,6 +251,7 @@ class SideAdapterNetwork(nn.Module):
                     self.encode_layers):
                 outs.append({'query': x_query, 'x': x_feat})
 
+            # encoder 每层融合pos_embed
             if index < len(self.encode_layers):
                 x = x + pos_embed
         return outs
@@ -593,8 +598,10 @@ class SideAdapterCLIPHead(BaseDecodeHead):
         # upsample mask
         mask_pred = F.interpolate(
             mask_pred, size=size, mode='bilinear', align_corners=False)
-
-        mask_cls = F.softmax(cls_score, dim=-1)[..., :-1]
+        
+        # TODO:这个错了应该只影响miou
+        # mask_cls = F.softmax(cls_score, dim=-1)[..., :-1]
+        mask_cls = F.softmax(cls_score, dim=-1)
         mask_pred = mask_pred.sigmoid()
         seg_logits = torch.einsum('bqc,bqhw->bchw', mask_cls, mask_pred)
         return seg_logits
@@ -695,6 +702,7 @@ class SideAdapterCLIPHead(BaseDecodeHead):
             for loss_decode in losses_decode:
                 if 'loss_cls' in loss_decode.loss_name:
                     if loss_decode.loss_name == 'loss_cls_ce':
+                        # TODO:kd
                         loss[loss_decode.loss_name] = loss_decode(
                             cls_scores, labels)
                     else:
@@ -705,6 +713,7 @@ class SideAdapterCLIPHead(BaseDecodeHead):
                     if mask_targets.shape[0] == 0:
                         loss[loss_decode.loss_name] = mask_preds.sum()
                     elif loss_decode.loss_name == 'loss_mask_ce':
+                        #TODO:KD
                         loss[loss_decode.loss_name] = loss_decode(
                             mask_point_preds,
                             mask_point_targets,
@@ -726,7 +735,7 @@ class SideAdapterCLIPHead(BaseDecodeHead):
         loss_dict = dict()
         # loss from the last decoder layer
         loss_dict.update(losses[-1])
-        # loss from other decoder layers
+        #TODO: what meaning loss from other decoder layers
         for i, loss in enumerate(losses[:-1]):
             for k, v in loss.items():
                 loss_dict[f'd{self.deep_supervision_idxs[i]}.{k}'] = v

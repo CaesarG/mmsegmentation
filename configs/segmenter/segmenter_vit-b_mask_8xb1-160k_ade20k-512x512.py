@@ -6,9 +6,18 @@ _base_ = [
 crop_size = (512, 512)
 data_preprocessor = dict(size=crop_size)
 model = dict(data_preprocessor=data_preprocessor)
-optimizer = dict(lr=0.001, weight_decay=0.0)
+optimizer = dict(lr=0.0001 / 2, weight_decay=0.0)
+param_scheduler = [
+    dict(
+        type='PolyLR',
+        eta_min=1e-5 / 2,
+        power=0.9,
+        begin=0,
+        end=160000,
+        by_epoch=False)
+]
 optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer)
 train_dataloader = dict(
     # num_gpus: 8 -> batch_size: 8
-    batch_size=1)
+    batch_size=4)
 val_dataloader = dict(batch_size=1)

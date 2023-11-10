@@ -131,11 +131,19 @@ class IoUMetric(BaseMetric):
 
         class_names = self.dataset_meta['classes']
 
-        # summary table
-        ret_metrics_summary = OrderedDict({
-            ret_metric: np.round(np.nanmean(ret_metric_value) * 100, 2)
-            for ret_metric, ret_metric_value in ret_metrics.items()
-        })
+        if class_names[0]=='background':
+            # TODO:summary table
+            ret_metrics_summary = OrderedDict({
+                ret_metric: np.round(np.nanmean(ret_metric_value[1:] if ret_metric!='aAcc' else ret_metric_value) * 100, 2) 
+                for ret_metric, ret_metric_value in ret_metrics.items()
+            })
+        else:
+            ret_metrics_summary = OrderedDict({
+                ret_metric: np.round(np.nanmean(ret_metric_value) * 100, 2)
+                for ret_metric, ret_metric_value in ret_metrics.items()
+            })
+        
+        
         metrics = dict()
         for key, val in ret_metrics_summary.items():
             if key == 'aAcc':

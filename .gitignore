@@ -118,3 +118,12 @@ mmseg/.mim
 
 # Pytorch
 *.pth
+
+FUCK/*
+*_work_dirs/*
+WEIGHTS/*
+config/*
+*.zip
+segmenter_config.py
+
+test_config_*.py

@@ -13,7 +13,7 @@ class ADE20KDataset(BaseSegDataset):
     '.png'.
     """
     METAINFO = dict(
-        classes=('wall', 'building', 'sky', 'floor', 'tree', 'ceiling', 'road',
+        classes=('background','wall', 'building', 'sky', 'floor', 'tree', 'ceiling', 'road',
                  'bed ', 'windowpane', 'grass', 'cabinet', 'sidewalk',
                  'person', 'earth', 'door', 'table', 'mountain', 'plant',
                  'curtain', 'chair', 'car', 'water', 'painting', 'sofa',
@@ -41,7 +41,7 @@ class ADE20KDataset(BaseSegDataset):
                  'tray', 'ashcan', 'fan', 'pier', 'crt screen', 'plate',
                  'monitor', 'bulletin board', 'shower', 'radiator', 'glass',
                  'clock', 'flag'),
-        palette=[[120, 120, 120], [180, 120, 120], [6, 230, 230], [80, 50, 50],
+        palette=[[0, 0, 0], [120, 120, 120], [180, 120, 120], [6, 230, 230], [80, 50, 50],
                  [4, 200, 3], [120, 120, 80], [140, 140, 140], [204, 5, 255],
                  [230, 230, 230], [4, 250, 7], [224, 5, 255], [235, 255, 7],
                  [150, 5, 61], [120, 120, 70], [8, 255, 51], [255, 6, 82],
@@ -83,7 +83,7 @@ class ADE20KDataset(BaseSegDataset):
     def __init__(self,
                  img_suffix='.jpg',
                  seg_map_suffix='.png',
-                 reduce_zero_label=True,
+                 reduce_zero_label=False,
                  **kwargs) -> None:
         super().__init__(
             img_suffix=img_suffix,
